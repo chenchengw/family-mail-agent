@@ -8,6 +8,33 @@ import pino from "pino";
 const log = pino({ name: "fetchNewMessages" });
 
 /**
+ * Skip emails that are obviously not actionable — calendar RSVPs,
+ * delivery failures, the agent's own outbound emails, etc.
+ * Checked before the LLM call to save tokens.
+ */
+function isAutoSkip(email: NormalizedEmail): boolean {
+  const subjectLower = email.subject.toLowerCase();
+  const fromLower = email.from.toLowerCase();
+  const agentEmail = (process.env.GMAIL_USER ?? "").toLowerCase();
+
+  // Calendar RSVP responses from Google
+  if (fromLower.includes("calendar-notification@google.com")) return true;
+  if (/^(accepted|declined|tentative):/.test(subjectLower)) return true;
+
+  // Agent's own outbound emails (digests echoed back)
+  if (agentEmail && fromLower.includes(agentEmail)) return true;
+
+  // Delivery failures
+  if (fromLower.includes("mailer-daemon@")) return true;
+  if (subjectLower.includes("delivery status notification")) return true;
+
+  // Gmail system emails
+  if (fromLower.includes("forwarding-noreply@google.com")) return true;
+
+  return false;
+}
+
+/**
  * Check whether a sender is allowed by config.
  */
 function isSenderAllowed(email: NormalizedEmail): boolean {
@@ -86,6 +113,14 @@ export async function fetchNewMessages(): Promise<NormalizedEmail[]> {
       log.debug(
         { from: normalized.from, subject: normalized.subject },
         "Skipping message from non-allowed sender"
+      );
+      continue;
+    }
+
+    if (isAutoSkip(normalized)) {
+      log.debug(
+        { from: normalized.from, subject: normalized.subject },
+        "Auto-skipping non-actionable email (RSVP, bounce, system)"
       );
       continue;
     }
