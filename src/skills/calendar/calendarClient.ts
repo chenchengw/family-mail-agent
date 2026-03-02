@@ -107,6 +107,14 @@ function buildEventResource(
   };
 }
 
+/** Check if a YYYY-MM-DD date is strictly before today. */
+function isPastDate(dateStr: string): boolean {
+  const eventDate = new Date(`${dateStr}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return eventDate < today;
+}
+
 /** Add one day to a YYYY-MM-DD string. */
 function nextDay(dateStr: string): string {
   const d = new Date(`${dateStr}T00:00:00Z`);
@@ -133,6 +141,13 @@ export async function createOrUpdateCalendarEvent(
   isUpdate: boolean
 ): Promise<string | null> {
   const isDryRun = process.env.DRY_RUN === "true";
+
+  // Skip past events — no point creating calendar entries for dates already gone
+  const effectiveDate = decision.event_date ?? decision.due_date;
+  if (effectiveDate && isPastDate(effectiveDate)) {
+    log.info({ eventKey, date: effectiveDate }, "Skipping calendar event for past date");
+    return null;
+  }
 
   // Resolve UID + sequence for state tracking (same pattern as before)
   const existing = getEventMapping(eventKey);

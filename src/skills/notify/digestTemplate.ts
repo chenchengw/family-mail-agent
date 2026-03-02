@@ -29,8 +29,11 @@ function categorize(results: ProcessedEmail[]) {
     switch (r.decision.classification) {
       case "CREATE_EVENT":
       case "UPDATE_EVENT":
-        if (r.decision.confidence === "high") {
+        if (r.decision.confidence === "high" && r.calendarEventId) {
           calendarAdded.push(r);
+        } else if (r.decision.confidence === "high") {
+          // High confidence but no calendar event (past date or API error)
+          skipped++;
         } else {
           needsReview.push(r);
         }
