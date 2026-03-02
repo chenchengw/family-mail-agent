@@ -1,0 +1,35 @@
+{
+  "name": "family-mail-agent",
+  "version": "1.0.0",
+  "description": "Daily email-to-calendar bot for family scheduling",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "run:daily": "tsx src/index.ts",
+    "run:dry": "DRY_RUN=true tsx src/index.ts",
+    "lint": "tsc --noEmit",
+    "auth": "tsx scripts/auth.ts"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.7",
+    "googleapis": "^144.0.0",
+    "ical-generator": "^8.0.0",
+    "js-yaml": "^4.1.0",
+    "nodemailer": "^6.9.16",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.0",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

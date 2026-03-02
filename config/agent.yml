@@ -1,0 +1,36 @@
+# Family Mail Agent Configuration
+
+timezone: America/Los_Angeles
+
+parents:
+  notify_to:
+    - chenchengwu88@gmail.com
+    - buaaliuweiyi@gmail.com
+
+email:
+  # Exact sender addresses to accept
+  allowed_senders: []
+    # - teacher@school.edu
+    # - coach@soccerclub.org
+  # Domain-level allowlist (any sender from this domain is accepted)
+  allowed_domains: []
+    # - school.edu
+    # - soccerclub.org
+
+# Sender profiles provide default context so the LLM can better classify emails.
+# Key by exact email or "@domain" for domain-wide defaults.
+sender_profiles: {}
+  # "teacher@school.edu":
+  #   child: Alice
+  #   activity: School
+  #   keywords:
+  #     - homework
+  #     - field trip
+  #     - parent-teacher
+  # "@soccerclub.org":
+  #   child: Bob
+  #   activity: Soccer
+  #   keywords:
+  #     - practice
+  #     - game
+  #     - tournament
