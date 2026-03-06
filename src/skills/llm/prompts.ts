@@ -15,6 +15,7 @@ RULES:
 7. When uncertain, choose NEEDS_CLARIFICATION rather than guessing.
 8. For UPDATE_EVENT: the child, activity, and original event_date should match the prior event where possible.
 9. due_date is for homework/assignments deadlines. If an email has BOTH a timed event AND a deadline (e.g. "projects due March 28, Science Fair viewing 6-8 PM"), populate BOTH event_date/start_time AND due_date.
+15. When an email specifies a DATE RANGE (e.g. "from March 10 to April 14", "starting Jan 5 through Feb 20", "every Tuesday 3-4 PM beginning March 3 until May 26"), set event_date to the FIRST date, event_end_date to the LAST date, and recurrence to the appropriate frequency ("weekly" or "daily"). If the email says "every [weekday]" or mentions a weekly schedule, use "weekly". If it says "every day" or "daily", use "daily". Only set recurrence when there is a clear repeating pattern with a date range.
 10. Normalize times to 24-hour HH:MM format.
 11. event_date and due_date must be YYYY-MM-DD.
 12. If an email only has a deadline with NO event time at all, set due_date and leave event_date and start_time null.
@@ -30,6 +31,8 @@ export function developerPrompt(): string {
   "child": string | null,
   "activity": string | null,
   "event_date": "YYYY-MM-DD" | null,
+  "event_end_date": "YYYY-MM-DD" | null,
+  "recurrence": "daily" | "weekly" | null,
   "start_time": "HH:MM" | null,
   "end_time": "HH:MM" | null,
   "location": string | null,
@@ -44,7 +47,9 @@ Field rules:
 - classification: REQUIRED. One of the four values.
 - child: Name of the child this event is for. null if unclear.
 - activity: Name of the activity (e.g. "Soccer Practice", "Piano Lesson"). null if unclear.
-- event_date: The date of the event in YYYY-MM-DD. null if not specified.
+- event_date: The date of the event (or FIRST occurrence for recurring events) in YYYY-MM-DD. null if not specified.
+- event_end_date: For recurring events, the LAST date of the series in YYYY-MM-DD. null for single events.
+- recurrence: "weekly" for weekly recurring events (e.g. "every Tuesday"), "daily" for daily events. null for single events. Only set when event_end_date is also set.
 - start_time: Event start time in HH:MM (24h). null if not specified.
 - end_time: Event end time in HH:MM (24h). null if not specified or same as start.
 - location: Event location. null if not specified.

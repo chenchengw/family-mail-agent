@@ -47,10 +47,7 @@ export async function extractDecision(
   const response = await client.messages.create({
     model,
     max_tokens: 1024,
-    system: [
-      { type: "text", text: systemPrompt(today) },
-      { type: "text", text: developerPrompt() },
-    ],
+    system: systemPrompt(today) + "\n\n" + developerPrompt(),
     messages: [
       {
         role: "user",
@@ -61,7 +58,7 @@ export async function extractDecision(
 
   // Extract text from response
   const textBlock = response.content.find((b) => b.type === "text");
-  const rawText = textBlock && "text" in textBlock ? textBlock.text : "";
+  const rawText = textBlock?.type === "text" ? textBlock.text : "";
 
   log.debug({ rawText }, "Raw LLM response");
 
@@ -82,6 +79,8 @@ export async function extractDecision(
       child: null,
       activity: null,
       event_date: null,
+      event_end_date: null,
+      recurrence: null,
       start_time: null,
       end_time: null,
       location: null,
@@ -105,6 +104,8 @@ export async function extractDecision(
       child: null,
       activity: null,
       event_date: null,
+      event_end_date: null,
+      recurrence: null,
       start_time: null,
       end_time: null,
       location: null,

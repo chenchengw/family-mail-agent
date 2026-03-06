@@ -83,6 +83,7 @@ function buildEventResource(
       start: { date: dateStr },
       end: { date: endDate },
       attendees,
+      guestsCanModify: true,
     };
   }
 
@@ -91,7 +92,7 @@ function buildEventResource(
   const endTime =
     decision.end_time ?? addOneHour(startTime);
 
-  return {
+  const event: calendar_v3.Schema$Event = {
     summary,
     description,
     location: decision.location ?? undefined,
@@ -104,7 +105,17 @@ function buildEventResource(
       timeZone: config.timezone,
     },
     attendees,
+    guestsCanModify: true,
   };
+
+  // Add recurrence rule if this is a recurring event with a date range
+  if (decision.recurrence && decision.event_end_date) {
+    const freq = decision.recurrence === "weekly" ? "WEEKLY" : "DAILY";
+    const until = decision.event_end_date.replace(/-/g, "") + "T235959Z";
+    event.recurrence = [`RRULE:FREQ=${freq};UNTIL=${until}`];
+  }
+
+  return event;
 }
 
 /** Check if a YYYY-MM-DD date is strictly before today. */
@@ -143,7 +154,8 @@ export async function createOrUpdateCalendarEvent(
   const isDryRun = process.env.DRY_RUN === "true";
 
   // Skip past events — no point creating calendar entries for dates already gone
-  const effectiveDate = decision.event_date ?? decision.due_date;
+  // For recurring events, check the end date since the series may still have future occurrences
+  const effectiveDate = decision.event_end_date ?? decision.event_date ?? decision.due_date;
   if (effectiveDate && isPastDate(effectiveDate)) {
     log.info({ eventKey, date: effectiveDate }, "Skipping calendar event for past date");
     return null;

@@ -27,6 +27,15 @@ export const LlmDecisionSchema = z.object({
     .regex(/^\d{2}:\d{2}$/, "Must be HH:MM")
     .nullable(),
   location: z.string().nullable(),
+  event_end_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD")
+    .nullable()
+    .default(null),
+  recurrence: z
+    .enum(["daily", "weekly"])
+    .nullable()
+    .default(null),
   due_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD")
